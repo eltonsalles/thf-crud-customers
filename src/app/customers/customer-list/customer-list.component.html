@@ -1,3 +1,9 @@
-<p>
-  customer-list works!
-</p>
+<thf-page-list t-title="Listagem de clientes">
+  <thf-table
+          t-sort="true"
+          [t-loading]="loading"
+          [t-items]="customers"
+          [t-columns]="columns"
+          [t-show-more-disabled]="!hasNext"
+          (t-show-more)="loadData()"></thf-table>
+</thf-page-list>
