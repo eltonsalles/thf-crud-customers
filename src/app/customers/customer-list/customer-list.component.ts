@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 import {
   ThfTableColumn,
@@ -11,7 +12,8 @@ import {
   ThfRadioGroupOption,
   ThfCheckboxGroupOption,
   ThfDisclaimerGroup,
-  ThfDisclaimer } from '@totvs/thf-ui';
+  ThfDisclaimer,
+  ThfPageAction } from '@totvs/thf-ui';
 
 @Component({
   selector: 'app-customer-list',
@@ -96,9 +98,13 @@ export class CustomerListComponent implements OnInit, OnDestroy {
     disclaimers: [],
   };
 
+  public readonly actions: Array<ThfPageAction> = [
+    { action: this.onNewCustomer.bind(this), label: 'Cadastrar', icon: 'thf-icon-user-add' }
+  ];
+
   @ViewChild('advancedFilter') advancedFilter: ThfModalComponent;
 
-  constructor(private httpClient: HttpClient) { }
+  constructor(private httpClient: HttpClient, private router: Router) { }
 
   ngOnInit() {
     this.loadData();
@@ -182,5 +188,9 @@ export class CustomerListComponent implements OnInit, OnDestroy {
     }
 
     this.loadData(this.searchFilters);
+  }
+
+  private onNewCustomer() {
+    this.router.navigateByUrl('/customers/new');
   }
 }
