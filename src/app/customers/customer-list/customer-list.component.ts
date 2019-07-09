@@ -13,7 +13,8 @@ import {
   ThfCheckboxGroupOption,
   ThfDisclaimerGroup,
   ThfDisclaimer,
-  ThfPageAction } from '@totvs/thf-ui';
+  ThfPageAction,
+  ThfTableAction } from '@totvs/thf-ui';
 
 @Component({
   selector: 'app-customer-list',
@@ -100,6 +101,10 @@ export class CustomerListComponent implements OnInit, OnDestroy {
 
   public readonly actions: Array<ThfPageAction> = [
     { action: this.onNewCustomer.bind(this), label: 'Cadastrar', icon: 'thf-icon-user-add' }
+  ];
+
+  public readonly tableActions: Array<ThfTableAction> = [
+    { action: this.onViewCustomer.bind(this), label: 'Visualisar' }
   ];
 
   @ViewChild('advancedFilter') advancedFilter: ThfModalComponent;
@@ -192,5 +197,9 @@ export class CustomerListComponent implements OnInit, OnDestroy {
 
   private onNewCustomer() {
     this.router.navigateByUrl('/customers/new');
+  }
+
+  private onViewCustomer(customer) {
+    this.router.navigateByUrl(`/customers/view/${customer.id}`);
   }
 }
