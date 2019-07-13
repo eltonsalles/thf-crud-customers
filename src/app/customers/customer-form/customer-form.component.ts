@@ -1,9 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { ThfNotificationService, ThfSelectOption } from '@totvs/thf-ui';
+
+const actionInsert = 'insert';
+const actionUpdate = 'update';
 
 @Component({
   selector: 'app-customer-form',
@@ -15,6 +19,7 @@ export class CustomerFormComponent implements OnDestroy, OnInit {
   private readonly url: string = 'https://sample-customers-api.herokuapp.com/api/thf-samples/v1/people';
 
   private customerSub: Subscription;
+  private paramsSub: Subscription;
 
   public customer: any = {};
 
@@ -24,15 +29,37 @@ export class CustomerFormComponent implements OnDestroy, OnInit {
     { label: 'Outros', value: 'Other' }
   ];
 
-  constructor(private thfNotification: ThfNotificationService, private router: Router, private httpClient: HttpClient) { }
+  private action: string = actionInsert;
+
+  constructor(
+    private thfNotification: ThfNotificationService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private httpClient: HttpClient) { }
 
   ngOnInit() {
+    this.paramsSub = this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.loadData(params['id']);
+        this.action = actionUpdate;
+      }
+    });
   }
 
   ngOnDestroy() {
+    this.paramsSub.unsubscribe()
+
     if (this.customerSub) {
       this.customerSub.unsubscribe();
     }
+  }
+
+  get isUpdateOperation() {
+    return this.action === actionUpdate;
+  }
+
+  get title() {
+    return this.isUpdateOperation ? 'Atualizando dados do cliente' : 'Novo cliente';
   }
 
   save() {
@@ -40,13 +67,30 @@ export class CustomerFormComponent implements OnDestroy, OnInit {
 
     customer.status = customer.status ? 'Active' : 'Inactive';
 
-    this.customerSub = this.httpClient.post(this.url, this.customer).subscribe(() => {
-      this.thfNotification.success('Cliente cadastrado com sucesso');
-      this.router.navigateByUrl('/customers');
-    });
+    this.customerSub = this.isUpdateOperation
+      ? this.httpClient.put(`${this.url}/${customer.id}`, customer)
+        .subscribe(() => this.navigateToList('Cliente atualizado com sucesso'))
+      : this.httpClient.post(this.url, this.customer)
+        .subscribe(() => this.navigateToList('Cliente cadastrado com sucesso'))
+  }
+
+  private navigateToList(msg: string) {
+    this.thfNotification.success(msg);
+    this.router.navigateByUrl('/customers');
   }
 
   cancel() {
     this.router.navigateByUrl('/customers');
+  }
+
+  private loadData(id) {
+    this.customerSub = this.httpClient.get(`${this.url}/${id}`)
+      .pipe(
+        map((customer:any) => {
+          customer.status = customer.status === 'active';
+          return customer;
+        })
+      )
+      .subscribe(response => this.customer = response);
   }
 }

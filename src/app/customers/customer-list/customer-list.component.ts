@@ -104,7 +104,8 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   ];
 
   public readonly tableActions: Array<ThfTableAction> = [
-    { action: this.onViewCustomer.bind(this), label: 'Visualisar' }
+    { action: this.onViewCustomer.bind(this), label: 'Visualisar' },
+    { action: this.onEditCustomer.bind(this), disabled: this.canEditCustomer.bind(this), label: 'Editar' }
   ];
 
   @ViewChild('advancedFilter') advancedFilter: ThfModalComponent;
@@ -201,5 +202,13 @@ export class CustomerListComponent implements OnInit, OnDestroy {
 
   private onViewCustomer(customer) {
     this.router.navigateByUrl(`/customers/view/${customer.id}`);
+  }
+
+  private onEditCustomer(customer) {
+    this.router.navigateByUrl(`/customers/edit/${customer.id}`);
+  }
+
+  private canEditCustomer(customer) {
+    return customer.status !== 'Active';
   }
 }
