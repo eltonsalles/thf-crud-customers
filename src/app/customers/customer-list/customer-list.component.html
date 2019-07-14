@@ -4,8 +4,10 @@
         [t-filter]="filter"
         [t-actions]="actions">
   <thf-table
-          [t-actions]="tableActions"
+          #table
+          t-checkbox
           t-sort="true"
+          [t-actions]="tableActions"
           [t-columns]="columns"
           [t-items]="customers"
           [t-loading]="loading"

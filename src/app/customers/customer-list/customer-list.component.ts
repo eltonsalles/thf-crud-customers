@@ -14,7 +14,10 @@ import {
   ThfDisclaimerGroup,
   ThfDisclaimer,
   ThfPageAction,
-  ThfTableAction } from '@totvs/thf-ui';
+  ThfTableAction,
+  ThfNotificationService,
+  ThfTableComponent
+} from '@totvs/thf-ui';
 
 @Component({
   selector: 'app-customer-list',
@@ -25,6 +28,8 @@ export class CustomerListComponent implements OnInit, OnDestroy {
 
   private readonly url: string = 'https://sample-customers-api.herokuapp.com/api/thf-samples/v1/people';
   private customerSub: Subscription;
+  private customerRemoveSub: Subscription;
+  private customersRemoveSub: Subscription;
   private customers: Array<any> = [];
   private readonly columns: Array<ThfTableColumn> = [
     { property: 'name', label: 'Nome' },
@@ -100,17 +105,20 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   };
 
   public readonly actions: Array<ThfPageAction> = [
-    { action: this.onNewCustomer.bind(this), label: 'Cadastrar', icon: 'thf-icon-user-add' }
+    { action: this.onNewCustomer.bind(this), label: 'Cadastrar', icon: 'thf-icon-user-add' },
+    { action: this.onRemoveCustomers.bind(this), label: 'Remover clientes' }
   ];
 
   public readonly tableActions: Array<ThfTableAction> = [
     { action: this.onViewCustomer.bind(this), label: 'Visualisar' },
-    { action: this.onEditCustomer.bind(this), disabled: this.canEditCustomer.bind(this), label: 'Editar' }
+    { action: this.onEditCustomer.bind(this), disabled: this.canEditCustomer.bind(this), label: 'Editar' },
+    { action: this.onRemoveCustomer.bind(this), label: 'Remover', type: 'danger', separator: true }
   ];
 
   @ViewChild('advancedFilter') advancedFilter: ThfModalComponent;
+  @ViewChild('table') table: ThfTableComponent;
 
-  constructor(private httpClient: HttpClient, private router: Router) { }
+  constructor(private httpClient: HttpClient, private router: Router, private thfNotification: ThfNotificationService) { }
 
   ngOnInit() {
     this.loadData();
@@ -118,6 +126,14 @@ export class CustomerListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.customerSub.unsubscribe();
+
+    if (this.customerRemoveSub) {
+      this.customerRemoveSub.unsubscribe();
+    }
+
+    if (this.customersRemoveSub) {
+      this.customersRemoveSub.unsubscribe();
+    }
   }
 
   private sendEmail(email, customer) {
@@ -210,5 +226,27 @@ export class CustomerListComponent implements OnInit, OnDestroy {
 
   private canEditCustomer(customer) {
     return customer.status !== 'Active';
+  }
+
+  private onRemoveCustomer(customer) {
+    this.customerRemoveSub = this.httpClient.delete(`${this.url}/${customer.id}`)
+      .subscribe(() => {
+        this.thfNotification.warning('Cadastro do cliente apagado com sucesso');
+        this.customers.splice(this.customers.indexOf(customer), 1);
+      });
+  }
+
+  private onRemoveCustomers() {
+    const selectedCustomers = this.table.getSelectedRows();
+    const customersWithId = selectedCustomers.map(customer => ({ id: customer.id }));
+
+    this.customersRemoveSub = this.httpClient.request('delete', this.url, { body: customersWithId })
+      .subscribe(() => {
+        this.thfNotification.warning('Clientes apagados com sucesso');
+
+        selectedCustomers.forEach(customer => {
+          this.customers.splice(this.customers.indexOf(customer), 1);
+        })
+      });
   }
 }

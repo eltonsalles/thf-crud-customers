@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ThfNotificationService } from '@totvs/thf-ui';
 
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -16,10 +17,15 @@ export class CustomerViewComponent implements OnDestroy, OnInit {
 
   private customerSub: Subscription;
   private paramsSub: Subscription;
+  private customerRemoveSub: Subscription;
 
   private customer: any = {};
 
-  constructor(private httpClient: HttpClient, private route: ActivatedRoute, private router: Router) { }
+  constructor(
+    private httpClient: HttpClient,
+    private route: ActivatedRoute,
+    private router: Router,
+    private thfNotification: ThfNotificationService) { }
 
   ngOnInit() {
     this.paramsSub = this.route.params.subscribe(params => this.loadData(params['id']));
@@ -28,6 +34,10 @@ export class CustomerViewComponent implements OnDestroy, OnInit {
   ngOnDestroy() {
     this.paramsSub.unsubscribe();
     this.customerSub.unsubscribe();
+
+    if (this.customerRemoveSub) {
+      this.customerRemoveSub.unsubscribe();
+    }
   }
 
   private loadData(id) {
@@ -50,5 +60,13 @@ export class CustomerViewComponent implements OnDestroy, OnInit {
 
   edit() {
     this.router.navigateByUrl(`customers/edit/${this.customer.id}`);
+  }
+
+  remove() {
+    this.customerRemoveSub = this.httpClient.delete(`${this.url}/${this.customer.id}`)
+      .subscribe(() => {
+        this.thfNotification.warning('Cadastro do cliente apagado com sucesso');
+        this.back();
+      });
   }
 }
