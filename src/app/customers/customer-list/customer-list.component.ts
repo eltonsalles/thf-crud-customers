@@ -32,10 +32,10 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   private customerRemoveSub: Subscription;
   private customersRemoveSub: Subscription;
 
-  private customers: Array<any> = [];
+  public customers: Array<any> = [];
 
-  private loading: boolean = true;
-  private hasNext: boolean = false;
+  public loading: boolean = true;
+  public hasNext: boolean = false;
   private page: number = 1;
   private searchTerm: string = '';
   private searchFilters: any;
@@ -86,7 +86,7 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   ];
 
   // Configuração do filtro
-  private readonly filter: ThfPageFilter = {
+  public readonly filter: ThfPageFilter = {
     action: this.onActionSearch.bind(this), // Filtro
     advancedAction: this.openAdvancedFilter.bind(this), // Filtro avançado
     ngModel: 'searchTerm',
@@ -185,7 +185,7 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   }
 
   // Carregar mais dados
-  private showMore() {
+  public showMore() {
     let params: any = {
       page: ++this.page,
     };

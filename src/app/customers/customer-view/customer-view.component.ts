@@ -19,7 +19,7 @@ export class CustomerViewComponent implements OnDestroy, OnInit {
   private paramsSub: Subscription;
   private customerRemoveSub: Subscription;
 
-  private customer: any = {};
+  public customer: any = {};
 
   constructor(
     private httpClient: HttpClient,
