@@ -40,6 +40,7 @@ export class CustomerViewComponent implements OnDestroy, OnInit {
     }
   }
 
+  // Carrega os dados do cliente conforme o id
   private loadData(id) {
     this.customerSub = this.httpClient.get(`${this.url}/${id}`)
       .pipe(map((customer: any) => {
@@ -54,14 +55,17 @@ export class CustomerViewComponent implements OnDestroy, OnInit {
       .subscribe(response => this.customer = response);
   }
 
+  // Quando é criado esse método o thf-page-detail cria um botão de navegação 'voltar'
   back() {
     this.router.navigateByUrl('customers');
   }
 
+  // Quando é criado esse método o thf-page-detail cria um botão de navegação 'editar'
   edit() {
     this.router.navigateByUrl(`customers/edit/${this.customer.id}`);
   }
 
+  // Quando é criado esse método o thf-page-detail cria um botão de navegação 'remover'
   remove() {
     this.customerRemoveSub = this.httpClient.delete(`${this.url}/${this.customer.id}`)
       .subscribe(() => {

@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 
 import { ThfNotificationService, ThfSelectOption } from '@totvs/thf-ui';
 
+// Variáveis para ajudar da configuração da págia conforme a ação executada pelo usuário
 const actionInsert = 'insert';
 const actionUpdate = 'update';
 
@@ -23,13 +24,15 @@ export class CustomerFormComponent implements OnDestroy, OnInit {
 
   public customer: any = {};
 
+  // Sempre começa com insert
+  private action: string = actionInsert;
+
+  // Lista dos gêneros
   public readonly genreOptions: Array<ThfSelectOption> = [
     { label: 'Feminino', value: 'Female' },
     { label: 'Masculino', value: 'Male' },
     { label: 'Outros', value: 'Other' }
   ];
-
-  private action: string = actionInsert;
 
   constructor(
     private thfNotification: ThfNotificationService,
@@ -47,21 +50,24 @@ export class CustomerFormComponent implements OnDestroy, OnInit {
   }
 
   ngOnDestroy() {
-    this.paramsSub.unsubscribe()
+    this.paramsSub.unsubscribe();
 
     if (this.customerSub) {
       this.customerSub.unsubscribe();
     }
   }
 
+  // Verifica se a operação realizada é alteração (Caso seja é necessário bloquear alguns campos, por exemplo, status, nome e email)
   get isUpdateOperation() {
     return this.action === actionUpdate;
   }
 
+  // Altera o título da página conforme a ação aplicada pelo usuário
   get title() {
     return this.isUpdateOperation ? 'Atualizando dados do cliente' : 'Novo cliente';
   }
 
+  // Quando é criado esse método o thf-page-edit cria um botão de ação 'salvar'
   save() {
     const customer = { ...this.customer };
 
@@ -74,15 +80,18 @@ export class CustomerFormComponent implements OnDestroy, OnInit {
         .subscribe(() => this.navigateToList('Cliente cadastrado com sucesso'))
   }
 
+  // Quando é criado esse método o thf-page-edit cria um botão de navegação 'voltar'
+  cancel() {
+    this.router.navigateByUrl('/customers');
+  }
+
+  // Exibe a mensagem conforme for e navega de volta para a listagem dos clientes
   private navigateToList(msg: string) {
     this.thfNotification.success(msg);
     this.router.navigateByUrl('/customers');
   }
 
-  cancel() {
-    this.router.navigateByUrl('/customers');
-  }
-
+  // Carrega os dados do cliente conforme o id
   private loadData(id) {
     this.customerSub = this.httpClient.get(`${this.url}/${id}`)
       .pipe(
